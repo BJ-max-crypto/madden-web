@@ -1,0 +1,49 @@
+// --- AUDIO SYSTEM ---
+const listener = new THREE.AudioListener();
+camera.add(listener);
+const crowdSound = new THREE.Audio(listener);
+const audioLoader = new THREE.AudioLoader();
+
+// This function starts the sound when the user first clicks
+const startAudio = () => {
+    if (crowdSound.buffer) {
+        crowdSound.play();
+        window.removeEventListener('click', startAudio);
+        document.getElementById('msg').innerText = "AUDIO ACTIVE - GO!";
+    }
+};
+window.addEventListener('click', startAudio);
+
+audioLoader.load('gregorquendel-free-crowd-cheering-sounds-02-strong-cheering-rhythmic-cheering-116190.mp3', (buffer) => {
+    crowdSound.setBuffer(buffer);
+    crowdSound.setLoop(true);
+    crowdSound.setVolume(0.5);
+    document.getElementById('msg').innerText = "CLICK TO START AUDIO & KICKOFF";
+});
+
+// --- UPDATED ANIMATION LOOP ---
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    if (mixer) mixer.update(delta);
+
+    if (player) {
+        // Only move if keys are pressed
+        let isMoving = false;
+        if (keys['w']) { player.position.z -= 0.35; isMoving = true; }
+        if (keys['s']) { player.position.z += 0.35; isMoving = true; }
+        if (keys['a']) { player.position.x -= 0.35; isMoving = true; }
+        if (keys['d']) { player.position.x += 0.35; isMoving = true; }
+
+        // Rotation logic so he faces the direction he runs
+        if (keys['w']) player.rotation.y = Math.PI;
+        if (keys['s']) player.rotation.y = 0;
+        if (keys['a']) player.rotation.y = -Math.PI / 2;
+        if (keys['d']) player.rotation.y = Math.PI / 2;
+
+        // Camera following the action
+        camera.position.lerp(new THREE.Vector3(player.position.x, 8, player.position.z + 16), 0.1);
+        camera.lookAt(player.position);
+    }
+    renderer.render(scene, camera);
+}
